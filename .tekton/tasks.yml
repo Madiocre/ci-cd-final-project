@@ -58,7 +58,7 @@ spec:
         set -e
 
         echo "Installing dependencies..."
-        npm ci
+        npm ci --no-audit --no-fund
 
         echo "Running ESLint..."
         npm run lint $(params.args)
@@ -85,7 +85,7 @@ spec:
         set -e
 
         echo "Installing dependencies..."
-        npm ci
+        [ -d node_modules ] || npm ci --no-audit --no-fund
 
         echo "Running Jest tests..."
         npm test $(params.args)
