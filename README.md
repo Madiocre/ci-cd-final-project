@@ -1,30 +1,44 @@
-# CI/CD Tools and Practices Final Project - JavaScript/Node.js Version
+# CI-CD-final-project
 
-This repository contains a Node.js/Express.js version of the counter service for the Final Project of the Coursera course **CI/CD Tools and Practices**.
+This repository is the final project for the IBM CI/CD course. It demonstrates a
+complete continuous integration and continuous delivery setup: automated linting
+and testing on every push via GitHub Actions, and an automated build and deploy
+pipeline running on OpenShift with Tekton.
 
-## Features
+## Tech stack
 
-- RESTful API for managing counters
-- In-memory storage
-- Comprehensive error handling
-- Security middleware (Helmet, CORS)
-- Logging middleware
-- Full test coverage with Jest
-- Docker support
-- Health check endpoint
+- **Runtime:** Node.js 20
+- **Testing:** Jest
+- **Linting:** ESLint
+- **CI:** GitHub Actions
+- **CD:** Tekton Pipelines on OpenShift
 
-## API Endpoints
+## Continuous Integration
 
-- `GET /` - Service information
-- `GET /health` - Health check
-- `GET /counters` - List all counters
-- `POST /counters/:name` - Create a new counter
-- `GET /counters/:name` - Read a specific counter
-- `PUT /counters/:name` - Increment a counter
-- `DELETE /counters/:name` - Delete a counter
+CI runs on every push and pull request to `main`, defined in
+[`.github/workflows/workflow.yml`](.github/workflows/workflow.yml).
 
-## Setup
+The workflow checks out the code, sets up Node.js 20, installs dependencies with
+`npm ci`, then runs two quality gates:
 
-1. **Install dependencies:**
-   ```bash
-   npm install
+| Step | Command | Purpose |
+|------|---------|---------|
+| Lint with ESLint | `npm run lint` | Enforces code style and catches common errors |
+| Run unit tests with Jest | `npm test` | Runs the unit test suite |
+
+## Continuous Delivery
+
+The Tekton pipeline is defined in [`.tekton/`](.tekton/), with reusable tasks in
+[`.tekton/tasks.yml`](.tekton/tasks.yml).
+
+| Task | What it does |
+|------|--------------|
+| `cleanup` | Clears the shared workspace before a new run begins |
+| `git-clone` | Clones the repository into the workspace |
+| `eslint` | Lints the source with ESLint |
+| `jest-test` | Runs the Jest unit test suite |
+| `buildah` | Builds the container image and pushes it to the registry |
+| `deploy` | Deploys the image to OpenShift |
+
+Tasks share a workspace backed by a PersistentVolumeClaim so that each step
+operates on the same checked-out source.
